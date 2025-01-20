@@ -1,4 +1,4 @@
-generates raw audio data in s16le at your sampling frequency of choice
+generates raw audio data in s16le at your sampling frequency of choice (default: 8khz)
 
 convert them to mp3 with `lame -r -s 8 --signed -m m --noreplaygain song.pcm song.mp3`
 

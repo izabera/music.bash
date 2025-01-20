@@ -133,8 +133,6 @@ envelope=${envelope//[[:space:]]}
    ssamples = samples * scale
 ))
 
-calc='cos[(x=(freq*pi2*t/ssamples)%pi2)/pi_2]'
-
 IFS=+
 set -f
 for note in "${song[@]}"; do
@@ -145,7 +143,7 @@ for note in "${song[@]}"; do
         freqs+=(${notes[$note]})
     done
 
-    notel=$((samples*inter*${BASH_REMATCH[3]:-100}/100000)) \
+    notel=$((samples*inter*${BASH_REMATCH[3]:-100}/100000))
     release_s=$((notel-release))
 
     for ((j=0;j<notel;j++,t++)) do
