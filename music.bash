@@ -23,9 +23,15 @@ song=(
     f5:66 f5:33 e5 c5 d5 c5:300  # happy birthday to you
 )
 
-samples=8000           # sample at 8khz
-inter=500              # default note is half a second long (value in ms)
-adsr=(18 100 17 10)    # envelope (values in ms ms % ms)
+samples=${samples-8000} # sample at 8khz
+inter=${inter-500}      # default note is half a second long (value in ms)
+adsr=(                  # envelope (values in ms ms % ms)
+    ${a-18}
+    ${d-100}
+    ${s-17}
+    ${r-10}
+)
+hnum=${hnum-4}          # number of harmonics
 
 # for now this assumes minimum note length = attack + decay + release
 # there will be audible pops if any notes are shorter
@@ -134,8 +140,14 @@ envelope=${envelope//[[:space:]]}
    ssamples = samples * scale
 ))
 
+harmonics="sample+=cos[(x=(freq*pi2*t/ssamples)%pi2)/pi_2]"
+for ((i=2;i<=hnum;i++)) do
+    harmonics+=",sample+=cos[(x=($i*freq*pi2*t/ssamples)%pi2)/pi_2]/$((2**(i-1)))"
+done
+
 IFS=+
 set -f
+
 for note in "${song[@]}"; do
     [[ $note =~ ([^:]*)(:(.*))? ]]
 
@@ -144,13 +156,13 @@ for note in "${song[@]}"; do
         freqs+=(${notes[$note]})
     done
 
-    notel=$((samples*inter*${BASH_REMATCH[3]:-100}/100000))
+    notel=$((samples*inter*${BASH_REMATCH[3]:-100}/100000)) \
     release_s=$((notel-release))
 
     for ((j=0;j<notel;j++,t++)) do
         sample=0
         for freq in "${freqs[@]}"; do
-            ((sample+=cos[(x=(freq*pi2*t/ssamples)%pi2)/pi_2]))
+            ((harmonics))
         done
 
         printf %b "${binary[$((sample*envelope/scale/10))]}"
